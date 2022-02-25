@@ -298,8 +298,11 @@ def main():
   print(decryptedText + "\n")
   
   # Upgraded Vigenere Cipher
-  text = 'Cats :) ! Hi Professor, I made this for fun thought the plain cipher was a little lacking'
-  key = 'horses and ponies with spears on their heads and rainbows lots of rainbows '
+  # text = 'Cats :) ! Hi Professor, I made this for fun thought the plain cipher was a little lacking'
+  # key = 'horses and ponies with spears on their heads and rainbows lots of rainbows '
+  
+  text = "My password is password"
+  key = "horse"
   encryptedText = upgradedVigenereCipher('enc', key, text)
   decryptedText = upgradedVigenereCipher('dec', key, encryptedText)
 

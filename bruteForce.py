@@ -39,29 +39,45 @@ def createVigenereCipherTable(alpha):
     
     return table
 
-def generateKey(lastKey):
-    print("Last Key: " + lastKey)
-    
+def nextLetter(letter):
     alpha = string.ascii_uppercase
+    
+    index = alpha.index(letter)
+    index += 1
+    if index >= 26:
+        index -= 26
+    
+    return alpha[index]
+
+def generateKey(lastKey):
+    # print("Last Key: " + lastKey)
+    
     newKey = ""
     
     if lastKey == "":
         newKey = 'A'
     
     elif lastKey == 'Z' * len(lastKey):
-        print("************************************")
+        # print("************************************")
         newKey = 'A' * (len(lastKey) +1)
     
     else: 
-        for letter in lastKey:
-            # fix by rotate only 1
-            index = alpha.index(letter)
-            index += 1
-            if index >= 26:
-                index -= 26
-            newKey += alpha[index]
+        newKey = lastKey
+        for i in range(len(lastKey)-1, -1, -1):
+            begin = newKey[:i]
+            end = ""
+            if i != len(lastKey)-1:
+                end = newKey[i+1:]
+            
+            # print(i, begin, end)
+            
+            if lastKey[i] == 'Z':
+                newKey = begin + 'A' + end
+            else:
+                newKey = begin + nextLetter(newKey[i]) + end
+                break
     
-    print("New Key: " + newKey)
+    # print("New Key: " + newKey)
     return newKey
 
 def vigenereBrute(encText):
@@ -75,47 +91,53 @@ def vigenereBrute(encText):
     tableUpper = createVigenereCipherTable(alphaUpper)
     tableLower = createVigenereCipherTable(alphaLower)
     
-    tries = 70
+    # determine number of tries
+    tries = 0
+    for i in range(len(encText), 0, -1):
+        tries += 26 ** i
+    print("Showing " + str(tries) + " results to get cover everything")
+    
     key = ""
     
     index = 0
     while index < tries :
+        
+        if index % 1000000000 == 0:
+            print("remaining results = " + str(tries - index))
+        
         #generate key to try
         key = generateKey(key)
+                
+        possText = ""
+        offset = 0
+        timesThrough = 1
         
-        results.append(key)
+        for i in range(len(encText)):
+            if encText[i] in alphaUpper:
+                table = tableUpper
+            elif encText[i] in alphaLower:
+                table = tableLower
+            
+            # creation of row 
+            if i >= len(key) * timesThrough:
+                offset = timesThrough * len(key)
+                timesThrough += 1
+            row = alphaUpper.index(key[i-offset]) #location across vertical of key letter
+            
+            # creation of col
+            for col in range(len(alphaUpper)):
+                if table[row][col] == encText[i]:
+                    possText += alphaUpper[col]
+                    break
+            
+        results.append("key: " + key + " = " + possText)
         index += 1
-        
-        # possText = ""
-        # offset = 0
-        # timesThrough = 1
-        
-        # for i in range(len(encText)):
-        #     if encText[i] in alphaUpper:
-        #         table = tableUpper
-        #     elif encText[i] in alphaLower:
-        #         table = tableLower
-            
-        #     # creation of row 
-        #     if i >= len(key) * timesThrough:
-        #         offset = timesThrough * len(key)
-        #         timesThrough += 1
-        #     row = alphaUpper.index(key[i-offset]) #location across vertical of key letter
-            
-        #     # creation of col
-        #     for col in range(len(alphaUpper)):
-        #         if table[row][col] == encText[i]:
-        #             possText += alphaUpper[col]
-        #             break
-            
-        # results.append("key: " + key + " = " + possText)
-        # index += 1
     
     return results
 
-def openFile(fileName="fileReadingWriting_Base_Default.txt"):
+def openFile(fileName="fileReadingWriting_Base_Default.txt", accesType = 'a'):
     try:
-        return open(fileName, "a")
+        return open(fileName, accesType)
     except:
         print("error opening file")
 
@@ -140,19 +162,21 @@ def printList(list):
     
     writeFile("hack.txt", data)
 
-def main():    
-    ciphertext = "GUVF VF ZL FRPERG ZRFFNTR."
+def main():
+    openFile("hack.txt", "w")  
     
     # Brute Force Ceasar Cipher
-    # cearsarDecryptedList = ceasarBrute(ciphertext)
-
-    # print('\n-  -  -  -  caesar cipher brute force  -  -  -  -')
-    # print(ciphertext)
-    # printList(cearsarDecryptedList)
+    ciphertext = "GUVF VF ZL FRPERG ZRFFNTR."
     
-    ciphertext = "Jok"
+    cearsarDecryptedList = ceasarBrute(ciphertext)
+
+    print('\n-  -  -  -  caesar cipher brute force  -  -  -  -')
+    print(ciphertext)
+    printList(cearsarDecryptedList)
     
     # Brute Force Vigenere Cipher
+    ciphertext = "Jokk"
+    
     vigenereDecryptedList = vigenereBrute(ciphertext)
     
     print('\n-  -  -  -  vigenere cipher brute force  -  -  -  -')
